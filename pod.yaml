@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: coredns-test
+  namespace: dns-test
+spec:
+  containers:
+    - name: dns
+      image: quay.io/bcrochet/coredns
+      ports:
+       - containerPort: 5353
+         hostPort: 53535
+      volumeMounts:
+        - name: config-volume
+          readOnly: true
+          mountPath: /etc/coredns
+      args:
+        - '-conf'
+        - /etc/coredns/Corefile
+  volumes:
+    - name: config-volume
+      configMap:
+        name: dns-default
+        items:
+          - key: Corefile
+            path: Corefile
+        defaultMode: 420
+    - name: hosts-file
+      hostPath:
+        path: /etc/hosts
+        type: File
+  serviceAccountName: dns
